@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -8,6 +9,16 @@ class CounterController extends StateNotifier<int> {
   void increment() {
     state++;
   }
+
+  // Random Functionality 1: Reset
+  void reset() {
+    state = 0;
+  }
+
+  // Random Functionality 2: Set to a Random Number
+  void setToRandom() {
+    state = Random().nextInt(100);
+  }
 }
 
 // 2. Define the Provider
@@ -16,7 +27,6 @@ final counterProvider = StateNotifierProvider<CounterController, int>((ref) {
 });
 
 void main() {
-  // 3. Wrap the app in ProviderScope
   runApp(
     const ProviderScope(
       child: MyApp(),
@@ -35,12 +45,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Riverpod Counter Home'),
+      home: const MyHomePage(title: 'Riverpod Advance Counter'),
     );
   }
 }
 
-// 4. Change to ConsumerWidget to access providers
 class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key, required this.title});
 
@@ -48,7 +57,6 @@ class MyHomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 5. Watch the provider state
     final count = ref.watch(counterProvider);
 
     return Scaffold(
@@ -60,17 +68,40 @@ class MyHomePage extends ConsumerWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            const Text('You have pushed the button this many times:'),
+            const Text('Counter Value:', style: TextStyle(fontSize: 20)),
             Text(
               '$count',
-              style: Theme.of(context).textTheme.headlineMedium,
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
+                color: count % 2 == 0 ? Colors.blue : Colors.red, // Count color changes if even/odd
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Button 1: Reset
+                ElevatedButton.icon(
+                  onPressed: () => ref.read(counterProvider.notifier).reset(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Reset'),
+                  style: ElevatedButton.styleFrom(foregroundColor: Colors.orange),
+                ),
+                const SizedBox(width: 20),
+                // Button 2: Random Number
+                ElevatedButton.icon(
+                  onPressed: () => ref.read(counterProvider.notifier).setToRandom(),
+                  icon: const Icon(Icons.casino),
+                  label: const Text('Random'),
+                  style: ElevatedButton.styleFrom(foregroundColor: Colors.green),
+                ),
+              ],
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 6. Use the controller to update state
           ref.read(counterProvider.notifier).increment();
         },
         tooltip: 'Increment',
